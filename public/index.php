@@ -9,12 +9,13 @@ use School\Infrastructure\Http\ApiRequest;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$apiKernel = new ApiKernel();
+$entityManager = require __DIR__ . '/../config/doctrine.php';
+
+$apiKernel = new ApiKernel($entityManager);
 if ($apiKernel->handle(new ApiRequest())) {
     exit;
 }
 
-$entityManager = require __DIR__ . '/../config/doctrine.php';
 $factory = new AppFactory($entityManager);
 $controller = new SchoolController($factory);
 
