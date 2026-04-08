@@ -47,6 +47,16 @@ class Subject
         return $this->course;
     }
 
+    public function updateName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function updateCourse(Course $course): void
+    {
+        $this->course = $course;
+    }
+
     public function assignTeacher(Teacher $teacher): void
     {
         $this->teacher = $teacher;
@@ -55,5 +65,10 @@ class Subject
     public function getTeacher(): ?Teacher
     {
         return $this->teacher;
+    }
+
+    public function unassignTeacher(): void
+    {
+        $this->teacher = null;
     }
 }
