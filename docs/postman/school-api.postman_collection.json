@@ -1,0 +1,213 @@
+{
+  "info": {
+    "name": "School OOP API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /api",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api"
+          }
+        },
+        {
+          "name": "GET /api/health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "GET /api/students",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/students"
+          }
+        },
+        {
+          "name": "GET /api/students/{id}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/students/1"
+          }
+        },
+        {
+          "name": "POST /api/students",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ana API\",\n  \"email\": \"ana.api@example.com\"\n}"
+            },
+            "url": "{{baseUrl}}/api/students"
+          }
+        },
+        {
+          "name": "PUT /api/students/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ana API Updated\"\n}"
+            },
+            "url": "{{baseUrl}}/api/students/1"
+          }
+        },
+        {
+          "name": "DELETE /api/students/{id}",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/students/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teachers",
+      "item": [
+        {
+          "name": "GET /api/teachers",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/teachers"
+          }
+        },
+        {
+          "name": "GET /api/teachers/{id}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/teachers/1"
+          }
+        },
+        {
+          "name": "POST /api/teachers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pepe API\",\n  \"email\": \"pepe.api@example.com\"\n}"
+            },
+            "url": "{{baseUrl}}/api/teachers"
+          }
+        },
+        {
+          "name": "PUT /api/teachers/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pepe API Updated\"\n}"
+            },
+            "url": "{{baseUrl}}/api/teachers/1"
+          }
+        },
+        {
+          "name": "DELETE /api/teachers/{id}",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/teachers/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subjects",
+      "item": [
+        {
+          "name": "GET /api/subjects",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/subjects"
+          }
+        },
+        {
+          "name": "GET /api/subjects/{id}",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/subjects/1"
+          }
+        },
+        {
+          "name": "POST /api/subjects",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"DWEC API\",\n  \"course_id\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/subjects"
+          }
+        },
+        {
+          "name": "PUT /api/subjects/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"DWEC API Updated\",\n  \"teacher_id\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/subjects/1"
+          }
+        },
+        {
+          "name": "DELETE /api/subjects/{id}",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/subjects/1"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8001"
+    }
+  ]
+}
