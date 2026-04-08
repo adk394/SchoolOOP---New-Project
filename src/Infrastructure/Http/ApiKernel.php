@@ -6,6 +6,7 @@ namespace School\Infrastructure\Http;
 
 use Doctrine\ORM\EntityManagerInterface;
 use School\Infrastructure\Http\Controller\StudentsApiController;
+use School\Infrastructure\Http\Controller\TeachersApiController;
 
 final class ApiKernel
 {
@@ -37,6 +38,7 @@ final class ApiKernel
         }
 
         $studentsController = new StudentsApiController($this->entityManager);
+        $teachersController = new TeachersApiController($this->entityManager);
 
         if ($method === 'GET' && $path === '/api/students') {
             $studentsController->index();
@@ -63,6 +65,35 @@ final class ApiKernel
 
             if ($method === 'DELETE') {
                 $studentsController->delete($id);
+                return true;
+            }
+        }
+
+        if ($method === 'GET' && $path === '/api/teachers') {
+            $teachersController->index();
+            return true;
+        }
+
+        if ($method === 'POST' && $path === '/api/teachers') {
+            $teachersController->create($request);
+            return true;
+        }
+
+        if (preg_match('#^/api/teachers/(\d+)$#', $path, $matches) === 1) {
+            $id = (int) $matches[1];
+
+            if ($method === 'GET') {
+                $teachersController->show($id);
+                return true;
+            }
+
+            if ($method === 'PUT') {
+                $teachersController->update($id, $request);
+                return true;
+            }
+
+            if ($method === 'DELETE') {
+                $teachersController->delete($id);
                 return true;
             }
         }

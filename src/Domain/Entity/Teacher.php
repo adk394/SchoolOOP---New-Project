@@ -41,4 +41,15 @@ class Teacher
     {
         return $this->email;
     }
+
+    public function updateData(?string $name, ?string $email): void
+    {
+        if ($name !== null) {
+            $this->name = $name;
+        }
+
+        if ($email !== null) {
+            $this->email = $email;
+        }
+    }
 }
