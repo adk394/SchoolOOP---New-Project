@@ -15,10 +15,13 @@ use School\Application\UseCase\DeleteStudent;
 use School\Application\UseCase\DeleteSubject;
 use School\Application\UseCase\DeleteTeacher;
 use School\Application\UseCase\EnrollStudent;
+use School\Auth\Application\Login\LoginHandler;
+use School\Auth\Infrastructure\Auth\Token\JwtTokenGenerator;
 use School\Infrastructure\Persistence\Doctrine\DoctrineCourseRepository;
 use School\Infrastructure\Persistence\Doctrine\DoctrineStudentRepository;
 use School\Infrastructure\Persistence\Doctrine\DoctrineSubjectRepository;
 use School\Infrastructure\Persistence\Doctrine\DoctrineTeacherRepository;
+use School\Infrastructure\Persistence\Doctrine\DoctrineUserRepository;
 
 class AppFactory
 {
@@ -83,5 +86,20 @@ class AppFactory
             new DoctrineSubjectRepository($this->entityManager),
             new DoctrineTeacherRepository($this->entityManager)
         );
+    }
+
+    public function createAuthRepository(): DoctrineUserRepository
+    {
+        return new DoctrineUserRepository($this->entityManager);
+    }
+
+    public function createJwtTokenGenerator(string $secret): JwtTokenGenerator
+    {
+        return new JwtTokenGenerator($secret);
+    }
+
+    public function createLoginHandler(string $jwtSecret): LoginHandler
+    {
+        return new LoginHandler($this->createAuthRepository(), $this->createJwtTokenGenerator($jwtSecret));
     }
 }
