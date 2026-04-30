@@ -26,138 +26,59 @@ final class ApiKernel
         }
 
         if ($method === 'GET' && $path === '/api') {
-            ApiResponse::json(200, [
-                'message' => 'School API running',
-            ]);
+            ApiResponse::json(200, ['message' => 'School API running']);
             return true;
         }
 
         if ($method === 'GET' && $path === '/api/health') {
-            ApiResponse::json(200, [
-                'status' => 'ok',
-            ]);
+            ApiResponse::json(200, ['status' => 'ok']);
             return true;
         }
 
-        $studentsController = new StudentsApiController($this->entityManager);
-        $teachersController = new TeachersApiController($this->entityManager);
-        $subjectsController = new SubjectsApiController($this->entityManager);
-        $coursesController = new CoursesApiController($this->entityManager);
+        $handled = $this->routeResource('students', $path, $method, $request, new StudentsApiController($this->entityManager))
+            || $this->routeResource('teachers', $path, $method, $request, new TeachersApiController($this->entityManager))
+            || $this->routeResource('subjects', $path, $method, $request, new SubjectsApiController($this->entityManager))
+            || $this->routeResource('courses', $path, $method, $request, new CoursesApiController($this->entityManager));
 
-        if ($method === 'GET' && $path === '/api/students') {
-            $studentsController->index();
-            return true;
+        if (!$handled) {
+            ApiResponse::json(404, ['error' => 'Endpoint not found']);
         }
 
-        if ($method === 'POST' && $path === '/api/students') {
-            $studentsController->create($request);
-            return true;
-        }
-
-        if (preg_match('#^/api/students/(\d+)$#', $path, $matches) === 1) {
-            $id = (int) $matches[1];
-
-            if ($method === 'GET') {
-                $studentsController->show($id);
-                return true;
-            }
-
-            if ($method === 'PUT') {
-                $studentsController->update($id, $request);
-                return true;
-            }
-
-            if ($method === 'DELETE') {
-                $studentsController->delete($id);
-                return true;
-            }
-        }
-
-        if ($method === 'GET' && $path === '/api/teachers') {
-            $teachersController->index();
-            return true;
-        }
-
-        if ($method === 'POST' && $path === '/api/teachers') {
-            $teachersController->create($request);
-            return true;
-        }
-
-        if (preg_match('#^/api/teachers/(\d+)$#', $path, $matches) === 1) {
-            $id = (int) $matches[1];
-
-            if ($method === 'GET') {
-                $teachersController->show($id);
-                return true;
-            }
-
-            if ($method === 'PUT') {
-                $teachersController->update($id, $request);
-                return true;
-            }
-
-            if ($method === 'DELETE') {
-                $teachersController->delete($id);
-                return true;
-            }
-        }
-
-        if ($method === 'GET' && $path === '/api/subjects') {
-            $subjectsController->index();
-            return true;
-        }
-
-        if ($method === 'POST' && $path === '/api/subjects') {
-            $subjectsController->create($request);
-            return true;
-        }
-
-        if ($method === 'GET' && $path === '/api/courses') {
-            $coursesController->index();
-            return true;
-        }
-
-        if ($method === 'POST' && $path === '/api/courses') {
-            $coursesController->create($request);
-            return true;
-        }
-
-        if (preg_match('#^/api/courses/(\d+)$#', $path, $matches) === 1) {
-            $id = (int) $matches[1];
-
-            if ($method === 'GET') {
-                $coursesController->show($id);
-                return true;
-            }
-
-            if ($method === 'DELETE') {
-                $coursesController->delete($id);
-                return true;
-            }
-        }
-
-        if (preg_match('#^/api/subjects/(\d+)$#', $path, $matches) === 1) {
-            $id = (int) $matches[1];
-
-            if ($method === 'GET') {
-                $subjectsController->show($id);
-                return true;
-            }
-
-            if ($method === 'PUT') {
-                $subjectsController->update($id, $request);
-                return true;
-            }
-
-            if ($method === 'DELETE') {
-                $subjectsController->delete($id);
-                return true;
-            }
-        }
-
-        ApiResponse::json(404, [
-            'error' => 'Endpoint not found',
-        ]);
         return true;
+    }
+
+    private function routeResource(string $resource, string $path, string $method, ApiRequest $request, object $controller): bool
+    {
+        if (!preg_match("#^/api/{$resource}(?:/(\d+))?$#", $path, $matches)) {
+            return false;
+        }
+
+        $id = isset($matches[1]) ? (int) $matches[1] : null;
+
+        if ($id === null) {
+            if ($method === 'GET') {
+                $controller->index();
+                return true;
+            }
+            if ($method === 'POST') {
+                $controller->create($request);
+                return true;
+            }
+        } else {
+            if ($method === 'GET') {
+                $controller->show($id);
+                return true;
+            }
+            if ($method === 'PUT') {
+                $controller->update($id, $request);
+                return true;
+            }
+            if ($method === 'DELETE') {
+                $controller->delete($id);
+                return true;
+            }
+        }
+
+        return false;
     }
 }

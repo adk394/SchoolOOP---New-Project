@@ -15,45 +15,66 @@ use School\Infrastructure\Persistence\Doctrine\DoctrineCourseRepository;
 
 final class CoursesApiController
 {
-    private DoctrineCourseRepository $courseRepository;
+    private DoctrineCourseRepository $repo;
+    private EntityManagerInterface $em;
 
-    public function __construct(private readonly EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->courseRepository = new DoctrineCourseRepository($entityManager);
+        $this->em = $em;
+        $this->repo = new DoctrineCourseRepository($em);
     }
 
     public function index(): void
     {
-        $items = $this->entityManager->getRepository(Course::class)->findAll();
-        $result = array_map(fn (Course $c): array => $this->toArray($c), $items);
-
-        ApiResponse::json(200, ['data' => $result]);
+        $courses = $this->em->getRepository(Course::class)->findAll();
+        ApiResponse::json(200, ['data' => array_map(fn(Course $c) => $this->toArray($c), $courses)]);
     }
 
     public function show(int $id): void
     {
-        $course = $this->courseRepository->findById($id);
-        if ($course === null) {
-            ApiResponse::json(404, ['error' => 'Course not found']);
-            return;
-        }
-
-        ApiResponse::json(200, ['data' => $this->toArray($course)]);
+        $course = $this->repo->findById($id);
+        $course ? ApiResponse::json(200, ['data' => $this->toArray($course)]) : ApiResponse::json(404, ['error' => 'Not found']);
     }
 
     public function create(ApiRequest $request): void
     {
-        $body = $request->getBody();
-        $name = trim((string) ($body['name'] ?? ''));
-
-        if ($name === '') {
-            ApiResponse::json(400, ['error' => 'name is required']);
-            return;
-        }
-
         try {
-            $course = (new CreateCourse($this->courseRepository))->execute($name);
+            $body = $request->getBody();
+            $name = trim($body['name'] ?? '');
+
+            if (!$name) {
+                ApiResponse::json(400, ['error' => 'name required']);
+                return;
+            }
+
+            $course = (new CreateCourse($this->repo))->execute($name);
             ApiResponse::json(201, ['data' => $this->toArray($course)]);
+        } catch (\Throwable $e) {
+            ApiResponse::json(500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    public function update(int $id, ApiRequest $request): void
+    {
+        try {
+            $course = $this->repo->findById($id);
+            if (!$course) {
+                ApiResponse::json(404, ['error' => 'Not found']);
+                return;
+            }
+
+            $body = $request->getBody();
+            if (isset($body['name'])) {
+                $name = trim($body['name']);
+                if (!$name) {
+                    ApiResponse::json(400, ['error' => 'name cannot be empty']);
+                    return;
+                }
+                $course->updateName($name);
+                $this->repo->save($course);
+            }
+
+            ApiResponse::json(200, ['data' => $this->toArray($course)]);
         } catch (\Throwable $e) {
             ApiResponse::json(500, ['error' => $e->getMessage()]);
         }
@@ -62,7 +83,7 @@ final class CoursesApiController
     public function delete(int $id): void
     {
         try {
-            (new DeleteCourse($this->courseRepository))->execute($id);
+            (new DeleteCourse($this->repo))->execute($id);
             ApiResponse::noContent();
         } catch (InvalidArgumentException $e) {
             ApiResponse::json(404, ['error' => $e->getMessage()]);
@@ -71,11 +92,8 @@ final class CoursesApiController
         }
     }
 
-    private function toArray(Course $course): array
+    private function toArray(Course $c): array
     {
-        return [
-            'id' => $course->getId(),
-            'name' => $course->getName(),
-        ];
+        return ['id' => $c->getId(), 'name' => $c->getName()];
     }
 }

@@ -15,45 +15,40 @@ use School\Infrastructure\Persistence\Doctrine\DoctrineTeacherRepository;
 
 final class TeachersApiController
 {
-    private DoctrineTeacherRepository $teacherRepository;
+    private DoctrineTeacherRepository $repo;
+    private EntityManagerInterface $em;
 
-    public function __construct(private readonly EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->teacherRepository = new DoctrineTeacherRepository($entityManager);
+        $this->em = $em;
+        $this->repo = new DoctrineTeacherRepository($em);
     }
 
     public function index(): void
     {
-        $items = $this->entityManager->getRepository(Teacher::class)->findAll();
-        $result = array_map(fn (Teacher $teacher): array => $this->toArray($teacher), $items);
-
-        ApiResponse::json(200, ['data' => $result]);
+        $teachers = $this->em->getRepository(Teacher::class)->findAll();
+        ApiResponse::json(200, ['data' => array_map(fn(Teacher $t) => $this->toArray($t), $teachers)]);
     }
 
     public function show(int $id): void
     {
-        $teacher = $this->teacherRepository->findById($id);
-        if ($teacher === null) {
-            ApiResponse::json(404, ['error' => 'Teacher not found']);
-            return;
-        }
-
-        ApiResponse::json(200, ['data' => $this->toArray($teacher)]);
+        $teacher = $this->repo->findById($id);
+        $teacher ? ApiResponse::json(200, ['data' => $this->toArray($teacher)]) : ApiResponse::json(404, ['error' => 'Not found']);
     }
 
     public function create(ApiRequest $request): void
     {
-        $body = $request->getBody();
-        $name = trim((string) ($body['name'] ?? ''));
-        $email = trim((string) ($body['email'] ?? ''));
-
-        if ($name === '' || $email === '') {
-            ApiResponse::json(400, ['error' => 'name and email are required']);
-            return;
-        }
-
         try {
-            $teacher = (new CreateTeacher($this->teacherRepository))->execute($name, $email);
+            $body = $request->getBody();
+            $name = trim($body['name'] ?? '');
+            $email = trim($body['email'] ?? '');
+
+            if (!$name || !$email) {
+                ApiResponse::json(400, ['error' => 'name and email required']);
+                return;
+            }
+
+            $teacher = (new CreateTeacher($this->repo))->execute($name, $email);
             ApiResponse::json(201, ['data' => $this->toArray($teacher)]);
         } catch (\Throwable $e) {
             ApiResponse::json(500, ['error' => $e->getMessage()]);
@@ -62,27 +57,28 @@ final class TeachersApiController
 
     public function update(int $id, ApiRequest $request): void
     {
-        $teacher = $this->teacherRepository->findById($id);
-        if ($teacher === null) {
-            ApiResponse::json(404, ['error' => 'Teacher not found']);
-            return;
-        }
-
-        $body = $request->getBody();
-        $name = array_key_exists('name', $body) ? trim((string) $body['name']) : null;
-        $email = array_key_exists('email', $body) ? trim((string) $body['email']) : null;
-
-        if ($name === '' || $email === '') {
-            ApiResponse::json(400, ['error' => 'name/email cannot be empty']);
-            return;
-        }
-
         try {
-            $teacher->updateData($name, $email);
-            $this->teacherRepository->save($teacher);
+            $teacher = $this->repo->findById($id);
+            if (!$teacher) {
+                ApiResponse::json(404, ['error' => 'Not found']);
+                return;
+            }
+
+            $body = $request->getBody();
+            $name = isset($body['name']) ? trim($body['name']) : null;
+            $email = isset($body['email']) ? trim($body['email']) : null;
+
+            if (($name !== null && !$name) || ($email !== null && !$email)) {
+                ApiResponse::json(400, ['error' => 'Fields cannot be empty']);
+                return;
+            }
+
+            if ($name !== null || $email !== null) {
+                $teacher->updateData($name, $email);
+                $this->repo->save($teacher);
+            }
+
             ApiResponse::json(200, ['data' => $this->toArray($teacher)]);
-        } catch (InvalidArgumentException $e) {
-            ApiResponse::json(400, ['error' => $e->getMessage()]);
         } catch (\Throwable $e) {
             ApiResponse::json(500, ['error' => $e->getMessage()]);
         }
@@ -91,7 +87,7 @@ final class TeachersApiController
     public function delete(int $id): void
     {
         try {
-            (new DeleteTeacher($this->teacherRepository))->execute($id);
+            (new DeleteTeacher($this->repo))->execute($id);
             ApiResponse::noContent();
         } catch (InvalidArgumentException $e) {
             ApiResponse::json(404, ['error' => $e->getMessage()]);
@@ -100,12 +96,12 @@ final class TeachersApiController
         }
     }
 
-    private function toArray(Teacher $teacher): array
+    private function toArray(Teacher $t): array
     {
         return [
-            'id' => $teacher->getId(),
-            'name' => $teacher->getName(),
-            'email' => $teacher->getEmail(),
+            'id' => $t->getId(),
+            'name' => $t->getName(),
+            'email' => $t->getEmail(),
         ];
     }
 }
