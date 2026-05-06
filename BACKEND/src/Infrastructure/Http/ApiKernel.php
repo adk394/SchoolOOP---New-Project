@@ -35,7 +35,8 @@ final class ApiKernel
             return true;
         }
 
-        $handled = $this->routeResource('students', $path, $method, $request, new StudentsApiController($this->entityManager))
+        $handled = $this->routeStudentEnroll($path, $method, $request)
+            || $this->routeResource('students', $path, $method, $request, new StudentsApiController($this->entityManager))
             || $this->routeResource('teachers', $path, $method, $request, new TeachersApiController($this->entityManager))
             || $this->routeResource('subjects', $path, $method, $request, new SubjectsApiController($this->entityManager))
             || $this->routeResource('courses', $path, $method, $request, new CoursesApiController($this->entityManager));
@@ -44,6 +45,19 @@ final class ApiKernel
             ApiResponse::json(404, ['error' => 'Endpoint not found']);
         }
 
+        return true;
+    }
+
+    private function routeStudentEnroll(string $path, string $method, ApiRequest $request): bool
+    {
+        if (!preg_match('#^/api/students/(\d+)/enroll$#', $path, $matches)) {
+            return false;
+        }
+        if ($method !== 'POST') {
+            return false;
+        }
+        $controller = new StudentsApiController($this->entityManager);
+        $controller->enroll((int) $matches[1], $request);
         return true;
     }
 
