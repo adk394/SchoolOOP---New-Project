@@ -30,11 +30,6 @@ final class GoogleOAuthClient
         ]);
     }
 
-    /**
-     * Intercanvia el codi d'autorització per un access token de Google.
-     *
-     * @return array{access_token: string, token_type: string, expires_in: int}
-     */
     public function exchangeCode(string $code): array
     {
         $body = http_build_query([
@@ -45,11 +40,13 @@ final class GoogleOAuthClient
             'grant_type' => 'authorization_code',
         ]);
 
-        $context = stream_context_create(['http' => [
-            'method' => 'POST',
-            'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-            'content' => $body,
-        ]]);
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+                'content' => $body,
+            ]
+        ]);
 
         $response = @file_get_contents(self::TOKEN_URL, false, $context);
 
@@ -72,9 +69,11 @@ final class GoogleOAuthClient
 
     public function getUserInfo(string $accessToken): GoogleUser
     {
-        $context = stream_context_create(['http' => [
-            'header' => "Authorization: Bearer $accessToken\r\n",
-        ]]);
+        $context = stream_context_create([
+            'http' => [
+                'header' => "Authorization: Bearer $accessToken\r\n",
+            ]
+        ]);
 
         $response = @file_get_contents(self::USERINFO_URL, false, $context);
 

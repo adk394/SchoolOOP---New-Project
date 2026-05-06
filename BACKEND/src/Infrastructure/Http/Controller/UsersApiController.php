@@ -31,11 +31,10 @@ final class UsersApiController
     public function show(string $id): void
     {
         $user = $this->userRepository->findById($id);
-        if ($user === null) {
-            ApiResponse::json(404, ['error' => 'User not found']);
+        if (!$user) {
+            ApiResponse::json(404, ['error' => 'not found']);
             return;
         }
-
         ApiResponse::json(200, ['data' => $this->toArray($user)]);
     }
 
@@ -46,25 +45,21 @@ final class UsersApiController
         $email = trim((string) ($body['email'] ?? ''));
         $googleId = isset($body['google_id']) ? trim((string) $body['google_id']) : null;
 
-        if ($name === '' || $email === '') {
-            ApiResponse::json(400, ['error' => 'name and email are required']);
+        if (!$name || !$email) {
+            ApiResponse::json(400, ['error' => 'faltan datos']);
             return;
         }
 
-        try {
-            $user = new User(UserId::generate(), $googleId === '' ? null : $googleId, $email, $name);
-            $this->userRepository->save($user);
-            ApiResponse::json(201, ['data' => $this->toArray($user)]);
-        } catch (\Throwable $e) {
-            ApiResponse::json(500, ['error' => $e->getMessage()]);
-        }
+        $user = new User(UserId::generate(), $googleId === '' ? null : $googleId, $email, $name);
+        $this->userRepository->save($user);
+        ApiResponse::json(201, ['data' => $this->toArray($user)]);
     }
 
     public function update(string $id, ApiRequest $request): void
     {
         $user = $this->userRepository->findById($id);
-        if ($user === null) {
-            ApiResponse::json(404, ['error' => 'User not found']);
+        if (!$user) {
+            ApiResponse::json(404, ['error' => 'not found']);
             return;
         }
 
@@ -74,29 +69,22 @@ final class UsersApiController
         $googleId = array_key_exists('google_id', $body) ? trim((string) $body['google_id']) : null;
 
         if ($name === '' || $email === '') {
-            ApiResponse::json(400, ['error' => 'name and email cannot be empty']);
+            ApiResponse::json(400, ['error' => 'datos invalidos']);
             return;
         }
 
-        try {
-            $user->updateData($name, $email, $googleId);
-            $this->userRepository->save($user);
-            ApiResponse::json(200, ['data' => $this->toArray($user)]);
-        } catch (InvalidArgumentException $e) {
-            ApiResponse::json(400, ['error' => $e->getMessage()]);
-        } catch (\Throwable $e) {
-            ApiResponse::json(500, ['error' => $e->getMessage()]);
-        }
+        $user->updateData($name, $email, $googleId);
+        $this->userRepository->save($user);
+        ApiResponse::json(200, ['data' => $this->toArray($user)]);
     }
 
     public function delete(string $id): void
     {
         $user = $this->userRepository->findById($id);
-        if ($user === null) {
-            ApiResponse::json(404, ['error' => 'User not found']);
+        if (!$user) {
+            ApiResponse::json(404, ['error' => 'not found']);
             return;
         }
-
         $this->userRepository->delete($user);
         ApiResponse::noContent();
     }

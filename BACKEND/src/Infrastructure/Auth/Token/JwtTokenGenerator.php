@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace School\Auth\Infrastructure\Auth\Token;
+namespace School\Infrastructure\Auth\Token;
 
 use School\Auth\Domain\User;
 

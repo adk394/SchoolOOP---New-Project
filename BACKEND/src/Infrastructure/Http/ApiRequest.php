@@ -35,4 +35,12 @@ final class ApiRequest
     {
         return $this->body;
     }
+
+    public function getQuery(): array
+    {
+        $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '/');
+        $queryString = (string) (parse_url($requestUri, PHP_URL_QUERY) ?? '');
+        parse_str($queryString, $query);
+        return $query;
+    }
 }

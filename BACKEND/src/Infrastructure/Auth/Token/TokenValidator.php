@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace School\Auth\Infrastructure\Auth\Token;
+namespace School\Infrastructure\Auth\Token;
 
 final class TokenValidator
 {
@@ -13,9 +13,6 @@ final class TokenValidator
         }
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function validate(string $token): array
     {
         $parts = explode('.', $token);

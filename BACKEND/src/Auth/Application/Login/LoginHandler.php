@@ -7,7 +7,7 @@ namespace School\Auth\Application\Login;
 use School\Auth\Domain\AuthRepository;
 use School\Auth\Domain\User;
 use School\Auth\Domain\UserId;
-use School\Auth\Infrastructure\Auth\Token\JwtTokenGenerator;
+use School\Infrastructure\Auth\Token\JwtTokenGenerator;
 
 final class LoginHandler
 {

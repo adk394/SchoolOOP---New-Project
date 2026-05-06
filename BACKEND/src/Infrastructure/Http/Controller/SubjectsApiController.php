@@ -38,82 +38,78 @@ final class SubjectsApiController
     public function show(int $id): void
     {
         $subject = $this->repo->findById($id);
-        $subject ? ApiResponse::json(200, ['data' => $this->toArray($subject)]) : ApiResponse::json(404, ['error' => 'Not found']);
+        $subject 
+            ? ApiResponse::json(200, ['data' => $this->toArray($subject)]) 
+            : ApiResponse::json(404, ['error' => 'not found']);
     }
 
     public function create(ApiRequest $request): void
     {
+        $body = $request->getBody();
+        $name = trim($body['name'] ?? '');
+        $courseId = (int) ($body['course_id'] ?? 0);
+
+        if (!$name || $courseId <= 0) {
+            ApiResponse::json(400, ['error' => 'faltan datos']);
+            return;
+        }
+
         try {
-            $body = $request->getBody();
-            $name = trim($body['name'] ?? '');
-            $courseId = (int) ($body['course_id'] ?? 0);
-
-            if (!$name || $courseId <= 0) {
-                ApiResponse::json(400, ['error' => 'name and course_id required']);
-                return;
-            }
-
             $subject = (new CreateSubject($this->repo, $this->courseRepo))->execute($name, $courseId);
             ApiResponse::json(201, ['data' => $this->toArray($subject)]);
         } catch (InvalidArgumentException $e) {
-            ApiResponse::json(404, ['error' => $e->getMessage()]);
-        } catch (\Throwable $e) {
-            ApiResponse::json(500, ['error' => $e->getMessage()]);
+            ApiResponse::json(404, ['error' => 'curso no encontrado']);
         }
     }
 
     public function update(int $id, ApiRequest $request): void
     {
-        try {
-            $subject = $this->repo->findById($id);
-            if (!$subject) {
-                ApiResponse::json(404, ['error' => 'Not found']);
+        $subject = $this->repo->findById($id);
+        if (!$subject) {
+            ApiResponse::json(404, ['error' => 'not found']);
+            return;
+        }
+
+        $body = $request->getBody();
+
+        if (isset($body['name'])) {
+            $name = trim($body['name']);
+            if (!$name) {
+                ApiResponse::json(400, ['error' => 'nombre invalido']);
                 return;
             }
-
-            $body = $request->getBody();
-
-            if (isset($body['name'])) {
-                $name = trim($body['name']);
-                if (!$name) {
-                    ApiResponse::json(400, ['error' => 'name cannot be empty']);
-                    return;
-                }
-                $subject->updateName($name);
-            }
-
-            if (isset($body['course_id'])) {
-                $courseId = (int) $body['course_id'];
-                if ($courseId <= 0) {
-                    ApiResponse::json(400, ['error' => 'course_id must be > 0']);
-                    return;
-                }
-                $course = $this->courseRepo->findById($courseId);
-                if (!$course) {
-                    ApiResponse::json(404, ['error' => 'Course not found']);
-                    return;
-                }
-                $subject->updateCourse($course);
-            }
-
-            if (isset($body['teacher_id'])) {
-                if ($body['teacher_id'] === null) {
-                    $subject->unassignTeacher();
-                } else {
-                    $teacher = $this->em->find(Teacher::class, (int) $body['teacher_id']);
-                    if (!$teacher) {
-                        ApiResponse::json(404, ['error' => 'Teacher not found']);
-                        return;
-                    }
-                    $subject->assignTeacher($teacher);
-                }
-            }
-
-            $this->repo->save($subject);
-            ApiResponse::json(200, ['data' => $this->toArray($subject)]);
-        } catch (\Throwable $e) {
-            ApiResponse::json(500, ['error' => $e->getMessage()]);
+            $subject->updateName($name);
         }
+
+        if (isset($body['course_id'])) {
+            $courseId = (int) $body['course_id'];
+            if ($courseId <= 0) {
+                ApiResponse::json(400, ['error' => 'course_id invalido']);
+                return;
+            }
+            $course = $this->courseRepo->findById($courseId);
+            if (!$course) {
+                ApiResponse::json(404, ['error' => 'curso no encontrado']);
+                return;
+            }
+            $subject->updateCourse($course);
+        }
+
+        if (isset($body['teacher_id'])) {
+            if ($body['teacher_id'] === null) {
+                $subject->unassignTeacher();
+            } else {
+                $teacher = $this->em->find(Teacher::class, (int) $body['teacher_id']);
+                if (!$teacher) {
+                    ApiResponse::json(404, ['error' => 'profesor no encontrado']);
+                    return;
+                }
+                $subject->assignTeacher($teacher);
+            }
+        }
+
+        $this->repo->save($subject);
+        ApiResponse::json(200, ['data' => $this->toArray($subject)]);
     }
 
     public function delete(int $id): void
@@ -122,9 +118,7 @@ final class SubjectsApiController
             (new DeleteSubject($this->repo))->execute($id);
             ApiResponse::noContent();
         } catch (InvalidArgumentException $e) {
-            ApiResponse::json(404, ['error' => $e->getMessage()]);
-        } catch (\Throwable $e) {
-            ApiResponse::json(500, ['error' => $e->getMessage()]);
+            ApiResponse::json(404, ['error' => 'not found']);
         }
     }
 

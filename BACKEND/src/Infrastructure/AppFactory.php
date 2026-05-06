@@ -16,7 +16,7 @@ use School\Application\UseCase\DeleteSubject;
 use School\Application\UseCase\DeleteTeacher;
 use School\Application\UseCase\EnrollStudent;
 use School\Auth\Application\Login\LoginHandler;
-use School\Auth\Infrastructure\Auth\Token\JwtTokenGenerator;
+use School\Infrastructure\Auth\Token\JwtTokenGenerator;
 use School\Infrastructure\Persistence\Doctrine\DoctrineCourseRepository;
 use School\Infrastructure\Persistence\Doctrine\DoctrineStudentRepository;
 use School\Infrastructure\Persistence\Doctrine\DoctrineSubjectRepository;

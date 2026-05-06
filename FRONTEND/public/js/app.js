@@ -3,6 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const view = document.getElementById('view');
   const resources = ['teachers', 'students', 'subjects', 'courses'];
 
+  // Verificar autenticación antes de inicializar
+  if (!window.Auth || !window.Auth.isAuthenticated()) {
+    // No autenticado, no inicializar funcionalidad
+    return;
+  }
+
   const displayLabels = {
     id: 'ID',
     name: 'Nombre',
@@ -38,7 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function request(path, options) {
-    const response = await fetch(`${apiBase}/${path}`, options);
+    // Usar fetch con autenticación
+    const response = await window.Auth.fetchWithAuth(`${apiBase}/${path}`, options);
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`${response.status} ${errorText || response.statusText}`);

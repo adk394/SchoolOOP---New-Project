@@ -14,6 +14,7 @@
   <script>
     window.API_BASE = "<?php echo e($apiBase); ?>";
   </script>
+  <script src="/js/auth.js"></script>
   <script src="/js/app.js"></script>
 </body>
 </html>

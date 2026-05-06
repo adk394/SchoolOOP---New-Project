@@ -33,51 +33,45 @@ final class CoursesApiController
     public function show(int $id): void
     {
         $course = $this->repo->findById($id);
-        $course ? ApiResponse::json(200, ['data' => $this->toArray($course)]) : ApiResponse::json(404, ['error' => 'Not found']);
+        $course 
+            ? ApiResponse::json(200, ['data' => $this->toArray($course)]) 
+            : ApiResponse::json(404, ['error' => 'not found']);
     }
 
     public function create(ApiRequest $request): void
     {
-        try {
-            $body = $request->getBody();
-            $name = trim($body['name'] ?? '');
+        $body = $request->getBody();
+        $name = trim($body['name'] ?? '');
 
-            if (!$name) {
-                ApiResponse::json(400, ['error' => 'name required']);
-                return;
-            }
-
-            $course = (new CreateCourse($this->repo))->execute($name);
-            ApiResponse::json(201, ['data' => $this->toArray($course)]);
-        } catch (\Throwable $e) {
-            ApiResponse::json(500, ['error' => $e->getMessage()]);
+        if (!$name) {
+            ApiResponse::json(400, ['error' => 'faltan datos']);
+            return;
         }
+
+        $course = (new CreateCourse($this->repo))->execute($name);
+        ApiResponse::json(201, ['data' => $this->toArray($course)]);
     }
 
     public function update(int $id, ApiRequest $request): void
     {
-        try {
-            $course = $this->repo->findById($id);
-            if (!$course) {
-                ApiResponse::json(404, ['error' => 'Not found']);
+        $course = $this->repo->findById($id);
+        if (!$course) {
+            ApiResponse::json(404, ['error' => 'not found']);
+            return;
+        }
+
+        $body = $request->getBody();
+        if (isset($body['name'])) {
+            $name = trim($body['name']);
+            if (!$name) {
+                ApiResponse::json(400, ['error' => 'nombre invalido']);
                 return;
             }
-
-            $body = $request->getBody();
-            if (isset($body['name'])) {
-                $name = trim($body['name']);
-                if (!$name) {
-                    ApiResponse::json(400, ['error' => 'name cannot be empty']);
-                    return;
-                }
-                $course->updateName($name);
-                $this->repo->save($course);
-            }
-
-            ApiResponse::json(200, ['data' => $this->toArray($course)]);
-        } catch (\Throwable $e) {
-            ApiResponse::json(500, ['error' => $e->getMessage()]);
+            $course->updateName($name);
+            $this->repo->save($course);
         }
+
+        ApiResponse::json(200, ['data' => $this->toArray($course)]);
     }
 
     public function delete(int $id): void
@@ -86,9 +80,7 @@ final class CoursesApiController
             (new DeleteCourse($this->repo))->execute($id);
             ApiResponse::noContent();
         } catch (InvalidArgumentException $e) {
-            ApiResponse::json(404, ['error' => $e->getMessage()]);
-        } catch (\Throwable $e) {
-            ApiResponse::json(500, ['error' => $e->getMessage()]);
+            ApiResponse::json(404, ['error' => 'not found']);
         }
     }
 

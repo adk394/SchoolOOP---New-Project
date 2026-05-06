@@ -11,16 +11,16 @@ use Doctrine\ORM\Mapping as ORM;
 final class User
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'string', length: 36)]
+    #[ORM\Column(name: 'id', type: 'string', length: 36)]
     private string $id;
 
-    #[ORM\Column(type: 'string', unique: true, nullable: true)]
+    #[ORM\Column(name: 'google_id', type: 'string', unique: true, nullable: true)]
     private ?string $googleId = null;
 
-    #[ORM\Column(type: 'string', unique: true)]
+    #[ORM\Column(name: 'email', type: 'string', unique: true)]
     private string $email;
 
-    #[ORM\Column(type: 'string')]
+    #[ORM\Column(name: 'name', type: 'string')]
     private string $name;
 
     public function __construct(UserId $id, ?string $googleId, string $email, string $name)
