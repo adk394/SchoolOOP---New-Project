@@ -56,6 +56,15 @@ final class SubjectsApiController
 
         try {
             $subject = (new CreateSubject($this->repo, $this->courseRepo))->execute($name, $courseId);
+
+            if (isset($body['teacher_id']) && $body['teacher_id'] !== '' && $body['teacher_id'] !== null) {
+                $teacher = $this->em->find(Teacher::class, (int) $body['teacher_id']);
+                if ($teacher) {
+                    $subject->assignTeacher($teacher);
+                    $this->repo->save($subject);
+                }
+            }
+
             ApiResponse::json(201, ['data' => $this->toArray($subject)]);
         } catch (InvalidArgumentException $e) {
             ApiResponse::json(404, ['error' => 'curso no encontrado']);

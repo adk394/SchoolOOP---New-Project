@@ -8,20 +8,24 @@ use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use School\Application\UseCase\CreateStudent;
 use School\Application\UseCase\DeleteStudent;
+use School\Application\UseCase\EnrollStudent;
 use School\Domain\Entity\Student;
 use School\Infrastructure\Http\ApiRequest;
 use School\Infrastructure\Http\ApiResponse;
+use School\Infrastructure\Persistence\Doctrine\DoctrineCourseRepository;
 use School\Infrastructure\Persistence\Doctrine\DoctrineStudentRepository;
 
 final class StudentsApiController
 {
     private DoctrineStudentRepository $repo;
+    private DoctrineCourseRepository $courseRepo;
     private EntityManagerInterface $em;
 
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
         $this->repo = new DoctrineStudentRepository($em);
+        $this->courseRepo = new DoctrineCourseRepository($em);
     }
 
     public function index(): void
@@ -50,6 +54,15 @@ final class StudentsApiController
         }
 
         $student = (new CreateStudent($this->repo))->execute($name, $email);
+
+        if (isset($body['course_id']) && $body['course_id']) {
+            $courseId = (int) $body['course_id'];
+            if ($courseId > 0) {
+                (new EnrollStudent($this->repo, $this->courseRepo))->execute($student->getId(), $courseId);
+                $this->em->refresh($student);
+            }
+        }
+
         ApiResponse::json(201, ['data' => $this->toArray($student)]);
     }
 
@@ -73,6 +86,14 @@ final class StudentsApiController
         if ($name !== null || $email !== null) {
             $student->updateData($name, $email);
             $this->repo->save($student);
+        }
+
+        if (isset($body['course_id'])) {
+            $courseId = (int) $body['course_id'];
+            if ($courseId > 0) {
+                (new EnrollStudent($this->repo, $this->courseRepo))->execute($id, $courseId);
+                $this->em->refresh($student);
+            }
         }
 
         ApiResponse::json(200, ['data' => $this->toArray($student)]);
