@@ -1,0 +1,33 @@
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./BACKEND
+      dockerfile: Dockerfile
+    container_name: school_backend
+    environment:
+      SCHOOL_FRONTEND_ORIGIN: http://localhost:8080
+      DB_PATH: /var/www/html/var/school.sqlite
+    ports:
+      - "8000:80"
+    volumes:
+      - ./BACKEND:/var/www/html
+      - db_data:/var/www/html/var
+
+  # Frontend
+  frontend:
+    build:
+      context: ./FRONTEND
+      dockerfile: Dockerfile
+    container_name: school_frontend
+    environment:
+      SCHOOL_API_BASE: http://localhost:8000/api
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./FRONTEND:/var/www/html
+
+volumes:
+  db_data:
