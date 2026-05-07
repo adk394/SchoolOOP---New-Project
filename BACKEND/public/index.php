@@ -32,6 +32,9 @@ header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 header('Access-Control-Allow-Credentials: true');
 
+// Asegurar que los headers CORS se envíen siempre
+header('Content-Type: application/json');
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
@@ -49,6 +52,5 @@ try {
     echo json_encode(['error' => 'Endpoint not found']);
 } catch (\Throwable $e) {
     http_response_code(500);
-    header('Content-Type: application/json');
-    echo json_encode(['error' => 'error del servidor']);
+    echo json_encode(['error' => 'error del servidor', 'message' => $e->getMessage()]);
 }

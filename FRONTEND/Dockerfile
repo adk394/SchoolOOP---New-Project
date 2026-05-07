@@ -1,36 +1,28 @@
-FROM php:7.4-apache
+FROM php:8.4-apache
 
-# Instalar extensiones necesarias
 RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    zip \
+    libzip-dev zip git unzip \
     && docker-php-ext-install zip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Habilitar mod_rewrite de Apache
 RUN a2enmod rewrite
 
-# Configurar el directorio de trabajo
+# desactiva warnings de deprecated
+RUN echo "error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT" > /usr/local/etc/php/conf.d/error-reporting.ini
+
 WORKDIR /var/www/html
 
-# Copiar archivos del frontend
 COPY . /var/www/html/
 
-# Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instalar dependencias
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --prefer-dist
 
-# Crear directorio cache si no existe
+# crea carpeta cache
 RUN mkdir -p /var/www/html/cache && chmod 777 /var/www/html/cache
 
-# Configurar permisos
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 
-# Configurar Apache para usar el directorio public
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
