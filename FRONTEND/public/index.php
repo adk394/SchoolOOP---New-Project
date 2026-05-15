@@ -17,6 +17,6 @@ IlluminateContainer::setInstance($container);
 
 $blade = new Blade($views, $cache, $container);
 
-$apiBase = getenv('SCHOOL_API_BASE') ?: 'http://localhost:8000/api';
+$apiBase = 'http://localhost:8000/api';
 
 echo $blade->render('app', ['apiBase' => $apiBase]);
