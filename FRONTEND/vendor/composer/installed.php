@@ -3,7 +3,7 @@
         'name' => 'school/frontend',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'e8b6173bafd3a2a4f669d8541d9faacda42e1698',
+        'reference' => '67332edc5ffd0adb7af5b2df357df5e9a5c6c9d8',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -196,7 +196,7 @@
         'school/frontend' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'e8b6173bafd3a2a4f669d8541d9faacda42e1698',
+            'reference' => '67332edc5ffd0adb7af5b2df357df5e9a5c6c9d8',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

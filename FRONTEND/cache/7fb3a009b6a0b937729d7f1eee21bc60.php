@@ -11,12 +11,13 @@
 </head>
 <body>
   <div id="app">
-    @yield('content')
+    <?php echo $__env->yieldContent('content'); ?>
   </div>
   <script>
-    window.API_BASE = "{{ $apiBase }}";
+    window.API_BASE = "<?php echo e($apiBase); ?>";
   </script>
   <script src="/js/auth.js"></script>
   <script src="/js/app.js"></script>
 </body>
 </html>
+<?php /**PATH C:\Users\izana\Downloads\programacion\Faculty\FRONTEND\views/layout.blade.php ENDPATH**/ ?>

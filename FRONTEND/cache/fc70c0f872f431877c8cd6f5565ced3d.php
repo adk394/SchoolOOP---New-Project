@@ -1,6 +1,6 @@
-@extends('layout')
 
-@section('content')
+
+<?php $__env->startSection('content'); ?>
 <div class="shell">
   <main class="main-content">
     <header class="topbar">
@@ -23,4 +23,6 @@
     <section id="view" aria-live="polite"></section>
   </main>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\izana\Downloads\programacion\Faculty\FRONTEND\views/app.blade.php ENDPATH**/ ?>

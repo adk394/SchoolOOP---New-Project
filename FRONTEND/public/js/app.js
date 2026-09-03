@@ -3,6 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const view = document.getElementById('view');
   const resources = ['teachers', 'students', 'subjects', 'courses'];
 
+  const resourceMeta = {
+    teachers: { title: 'Profesores', singular: 'profesor', description: 'Gestiona el equipo docente de la facultad.' },
+    students: { title: 'Estudiantes', singular: 'estudiante', description: 'Consulta y organiza el alumnado registrado.' },
+    subjects: { title: 'Asignaturas', singular: 'asignatura', description: 'Mantén actualizado el programa académico.' },
+    courses: { title: 'Cursos', singular: 'curso', description: 'Agrupa la actividad académica por curso.' }
+  };
+
   const labels = {
     id: 'ID',
     name: 'Nombre',
@@ -39,7 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   resources.forEach(r => {
     const btn = document.getElementById(`nav-${r}`);
-    if (btn) btn.addEventListener('click', () => showList(r));
+    if (btn) btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      btn.classList.add('active');
+      showList(r);
+    });
   });
 
   async function request(path, options = {}) {
@@ -80,7 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function render(resource, items) {
-    const title = resource[0].toUpperCase() + resource.slice(1);
+    const meta = resourceMeta[resource] || { title: resource, singular: resource, description: '' };
+    const title = meta.title;
     const fields = createFields[resource] || ['name'];
     const list = listFields[resource] || ['id', 'name'];
 
@@ -101,16 +113,16 @@ document.addEventListener('DOMContentLoaded', () => {
             `).join('')}
           </tbody>
         </table>`
-      : '<p>No hay elementos.</p>';
+      : `<div class="empty-state"><strong>Aún no hay ${meta.title.toLowerCase()}.</strong><span>Los registros que añadas aparecerán aquí.</span></div>`;
 
     view.innerHTML = `
-      <h2>${title}</h2>
+      <div class="section-heading"><div><p class="section-overline">Directorio académico</p><h2>${title}</h2><p class="section-description">${meta.description}</p></div><span class="record-count">${items.length} ${items.length === 1 ? 'registro' : 'registros'}</span></div>
       <div id="list">${tableHtml}</div>
       <div id="edit-form-container"></div>
-      <h3>Crear ${title.slice(0, -1)}</h3>
+      <div class="form-heading"><p class="section-overline">Nuevo registro</p><h3>Añadir ${meta.singular}</h3></div>
       <form id="create-form">
         ${fields.map(f => renderInput(f)).join('')}
-        <button type="submit">Crear</button>
+        <button type="submit">Guardar ${meta.singular}</button>
       </form>
     `;
 
@@ -141,12 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderEditForm(resource, item) {
     if (!item) return;
-    const title = resource[0].toUpperCase() + resource.slice(1);
+      const meta = resourceMeta[resource] || { title: resource, singular: resource };
+      const title = meta.title;
     const fields = editFields[resource] || ['name'];
     const container = document.getElementById('edit-form-container');
 
     container.innerHTML = `
       <h3>Editar ${title.slice(0, -1)}</h3>
+        <div class="form-heading"><p class="section-overline">Editar registro</p><h3>Editar ${meta.singular}</h3></div>
       <form id="edit-form">
         <input type="hidden" name="id" value="${item.id}">
         ${fields.map(f => renderInput(f, item[f] ?? '', f !== 'teacher_id')).join('')}
@@ -242,5 +256,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  document.getElementById('nav-teachers')?.classList.add('active');
   showList('teachers');
 });
